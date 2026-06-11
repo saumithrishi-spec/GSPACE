@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connected Apps Report</title>
+<style>
+:root{background-color:#f0f4f8}
+body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:#f0f4f8;color:#202124;font-size:14px;margin:0}
+header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:28px 36px}
+header h1{font-size:1.6rem;font-weight:600}
+header p{margin-top:5px;opacity:.8;font-size:.88rem}
+.wrap{max-width:1400px;margin:0 auto;padding:24px 20px}
+*{box-sizing:border-box}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:22px}
+.card{background:#fff;border-radius:10px;padding:18px 14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1);border-top:4px solid #1a73e8}
+.card.g{border-top-color:#34a853}.card.y{border-top-color:#f9ab00}.card.r{border-top-color:#ea4335}.card.p{border-top-color:#9334e6}
+.card-num{font-size:2rem;font-weight:700;color:#1a73e8}
+.card.g .card-num{color:#34a853}.card.y .card-num{color:#e37400}.card.r .card-num{color:#ea4335}.card.p .card-num{color:#9334e6}
+.card-label{font-size:.72rem;color:#5f6368;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.sec{background:#fff;border-radius:10px;padding:22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.sec h2{font-size:1rem;font-weight:600;color:#1a73e8;border-bottom:2px solid #dadce0;padding-bottom:9px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.badge{font-size:.72rem;background:#1a73e8;color:#fff;padding:2px 8px;border-radius:10px}
+.badge.r{background:#ea4335}.badge.g{background:#34a853}.badge.y{background:#f9ab00;color:#333}
+.info{background:#e8f0fe;border-left:4px solid #1a73e8;border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:.83rem;color:#174ea6}
+.warn{background:#fef7e0;border-left:4px solid #f9ab00;border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:.83rem;color:#7a4f00}
+.ok{background:#e6f4ea;border-left:4px solid #34a853;border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:.83rem;color:#1e4620}
+.tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:2px solid #dadce0;margin-bottom:0}
+.tab{padding:7px 16px;cursor:pointer;border:none;background:none;font-size:.83rem;color:#5f6368;border-bottom:3px solid transparent;margin-bottom:-2px;border-radius:4px 4px 0 0}
+.tab:hover{background:#f1f3f4;color:#202124}.tab.on{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:600}
+.pane{display:none;padding-top:18px}.pane.on{display:block}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.81rem}
+thead th{background:#f8f9fa;color:#5f6368;font-weight:600;text-transform:uppercase;font-size:.71rem;padding:9px 11px;text-align:left;border-bottom:2px solid #dadce0;white-space:nowrap}
+tbody tr:hover{background:#f1f3f4}
+tbody td{padding:8px 11px;border-bottom:1px solid #dadce0;vertical-align:top;max-width:380px;word-break:break-word}
+tbody tr:last-child td{border-bottom:none}
+.empty,.note{color:#5f6368;font-style:italic;padding:10px 0;font-size:.83rem}
+code{background:#f1f3f4;padding:1px 5px;border-radius:3px;font-size:.82rem}
+footer{text-align:center;padding:20px;color:#5f6368;font-size:.78rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>&#128279; Connected Apps &amp; Integration Usage Report</h1>
+  <p>Google Workspace &nbsp;&middot;&nbsp; Friday 17 Apr 2026, 00:07:08 &nbsp;&middot;&nbsp; Runtime: 108.6s</p>
+</header>
+<div class="wrap">
+
+<div class="cards">
+  <div class="card">  <div class="card-num">5</div>    <div class="card-label">Total Users</div></div>
+  <div class="card g"><div class="card-num">5</div>   <div class="card-label">Active Users</div></div>
+  <div class="card r"><div class="card-num">0</div>     <div class="card-label">Suspended</div></div>
+  <div class="card y"><div class="card-num">19</div>     <div class="card-label">OAuth Apps</div></div>
+  <div class="card">  <div class="card-num">8</div>   <div class="card-label">Token Records</div></div>
+  <div class="card p"><div class="card-num">4</div>  <div class="card-label">Mkt Policies</div></div>
+  <div class="card r"><div class="card-num">0</div> <div class="card-label">DwD Svc Accounts</div></div>
+  <div class="card g"><div class="card-num">0</div>   <div class="card-label">Chat Spaces</div></div>
+</div>
+
+<!-- CONNECTED APPS DETAIL -->
+<div class="sec">
+  <h2>&#128241; Connected Apps Detail <span class="badge">4 apps</span></h2>
+  <div class="info">
+    Each row is one OAuth-connected app. Columns show the app name, Client ID, how many users authorised it,
+    which Org Unit(s) those users belong to, the most-recent login across all users of that app,
+    Drive last-activity (if collected), the OAuth scopes granted, and the full user list.
+  </div>
+  <div class='warn'>LastActivity shows <em>Re-run with -IncludeLastActivity</em> because the Reports API was not called. Re-run with <strong>-IncludeLastActivity</strong> to populate it.</div>
+  <div class="tbl"><table><thead><tr><th>AppName</th><th>ClientId</th><th>UserCount</th><th>OrgUnits</th><th>LastLogin</th><th>LastActivity</th><th>Scopes</th><th>Users</th></tr></thead><tbody><tr><td>CustomMigration</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>4</td><td>/; /Roche/Users</td><td>2026-04-10T06:30:57Z</td><td>Re-run with -IncludeLastActivity</td><td>https://www.googleapis.com/auth/ediscovery.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/edi...</td><td>admin-aishwarya@rocheua.com; admin-madhusudhan@rocheua.com; admin-mahesh@rocheua.com; admin-manik@rocheua.com</td></tr><tr><td>Google Chrome</td><td>77185425430.apps.googleusercontent.com</td><td>2</td><td>/</td><td>2026-04-10T06:30:57Z</td><td>Re-run with -IncludeLastActivity</td><td>https://www.google.com/accounts/OAuthLogin</td><td>admin-aishwarya@rocheua.com; admin-mahesh@rocheua.com</td></tr><tr><td>Google AppSheet</td><td>953348912797-h2fo9tmk42mnrkk0kc6gula9i8ipv3re.apps.googleusercontent.com</td><td>1</td><td>/</td><td>2026-04-06T07:22:48Z</td><td>Re-run with -IncludeLastActivity</td><td>https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets openid https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds</td><td>admin-mahesh@rocheua.com</td></tr><tr><td>Create Test Data - GForms</td><td>777671318188-4cg53vqc19anouln9o7f2j3gdrunkg68.apps.googleusercontent.com</td><td>1</td><td>/</td><td>2026-04-10T06:30:57Z</td><td>Re-run with -IncludeLastActivity</td><td>https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/forms https://www.googleapis.com/auth/drive</td><td>admin-aishwarya@rocheua.com</td></tr></tbody></table></div>
+  <details style="margin-top:12px">
+    <summary style="cursor:pointer;font-size:.82rem;color:#5f6368">&#9660; Also show compact Top-25 summary</summary>
+    <div class="tbl" style="margin-top:10px"><table><thead><tr><th>AppName</th><th>ClientId</th><th>UserCount</th></tr></thead><tbody><tr><td>AI Translator</td><td>532416581139-bcuroll4sjfq7hnj5smqqfapspgkur44.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>AI Translator</td><td>532416581139-nqgg6grfi67k6oioinprk4m1afi8dkb4.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Absolute Poll</td><td>687007803052-paracp6ul7cqcaqs33frnmjkjjn5hick.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Acme Classic Site Builder</td><td>121404904689-7m2ftmmpbslfk1m925l4o60n5p9hbn1q.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Acme Drive Assets Creator</td><td>542426089046-blci4uk9kiv9jhd6d6hs4d4c43tkksnj.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Create Test Data - GForms</td><td>777671318188-4cg53vqc19anouln9o7f2j3gdrunkg68.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Custom-migration</td><td>2205574293-c6ho9alop99uoff5tkmr4qf0pe37057o.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>CustomMigration</td><td>493179929918-kusnvhjb32he5fjpl091ir7ietalkkpj.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>CustomMigration</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>GAM Project Creation</td><td>297408095146-fug707qsjv4ikron0hugpevbrjhkmsk7.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>GAM_Gsites</td><td>576746524153-epvg13khpgodr9cfas6h0gl79crue8e3.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Google APIs Explorer</td><td>292824132082.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Google AppSheet</td><td>953348912797-h2fo9tmk42mnrkk0kc6gula9i8ipv3re.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Google Chrome</td><td>77185425430.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Google Cloud SDK</td><td>32555940559.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Gvault-assessment</td><td>225588255228-lce3aal6vors9pq0j5rag55ju4it0i72.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>SpaceApp_Roche</td><td>811775695670-hlqv796tmr8ra4l95t9ig1t2rqna4g0g.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Test Domain Warden</td><td>1050499465157-no7cfjgmgk5g62r360mhoq2e5kogeoc7.apps.googleusercontent.com</td><td>N/A</td></tr><tr><td>Zoom</td><td>846561030874-1bjnacdps08t558f7gcgp8mqi33297h1.apps.googleusercontent.com</td><td>N/A</td></tr></tbody></table></div>
+  </details>
+</div>
+
+<!-- TOKEN DETAIL TABS -->
+<div class="sec">
+  <h2>&#128269; Detailed Token Data</h2>
+  <div class="tabs">
+    <button class="tab on" onclick="tab(event,'t-user')">Per User</button>
+    <button class="tab"    onclick="tab(event,'t-raw')">All Raw Tokens</button>
+    <button class="tab"    onclick="tab(event,'t-susp')">&#9888; Suspended w/ Tokens <span class="badge r">0</span></button>
+  </div>
+  <div id="t-user" class="pane on">
+    <p style="color:#5f6368;font-size:.82rem;margin-bottom:10px">Users ranked by number of OAuth-authorised apps. Top 100 shown.</p>
+    <div class="tbl"><table><thead><tr><th>User</th><th>AppCount</th><th>Apps</th></tr></thead><tbody><tr><td>admin-mahesh@rocheua.com</td><td>3</td><td>CustomMigration | Google Chrome | Google AppSheet</td></tr><tr><td>admin-aishwarya@rocheua.com</td><td>3</td><td>CustomMigration | Google Chrome | Create Test Data - GForms</td></tr><tr><td>admin-madhusudhan@rocheua.com</td><td>1</td><td>CustomMigration</td></tr><tr><td>admin-manik@rocheua.com</td><td>1</td><td>CustomMigration</td></tr></tbody></table></div>
+  </div>
+  <div id="t-raw" class="pane">
+    <div class="info">Raw OAuth token records - one row per user per app. Up to 300 shown. See tokens_all_users.csv for full data.</div>
+    <div class="tbl"><table><thead><tr><th>user</th><th>clientId</th><th>displayText</th><th>anonymous</th><th>nativeApp</th><th>userKey</th><th>scopes</th></tr></thead><tbody><tr><td>admin-aishwarya@rocheua.com</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>CustomMigration</td><td>False</td><td>False</td><td>108265445627704094570</td><td>https://www.googleapis.com/auth/ediscovery.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/edi...</td></tr><tr><td>admin-aishwarya@rocheua.com</td><td>77185425430.apps.googleusercontent.com</td><td>Google Chrome</td><td>False</td><td>False</td><td>108265445627704094570</td><td>https://www.google.com/accounts/OAuthLogin</td></tr><tr><td>admin-aishwarya@rocheua.com</td><td>777671318188-4cg53vqc19anouln9o7f2j3gdrunkg68.apps.googleusercontent.com</td><td>Create Test Data - GForms</td><td>False</td><td>False</td><td>108265445627704094570</td><td>https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/forms https://www.googleapis.com/auth/drive</td></tr><tr><td>admin-madhusudhan@rocheua.com</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>CustomMigration</td><td>False</td><td>False</td><td>115730170040899472480</td><td>https://www.googleapis.com/auth/ediscovery.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleap...</td></tr><tr><td>admin-manik@rocheua.com</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>CustomMigration</td><td>False</td><td>False</td><td>100536734976428005751</td><td>https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/ediscovery https://www.googleapis.com/auth/drive.metada...</td></tr><tr><td>admin-mahesh@rocheua.com</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>CustomMigration</td><td>False</td><td>False</td><td>100636443903876274243</td><td>https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/ediscovery https://www.googleapis.com/auth/drive.metada...</td></tr><tr><td>admin-mahesh@rocheua.com</td><td>77185425430.apps.googleusercontent.com</td><td>Google Chrome</td><td>False</td><td>False</td><td>100636443903876274243</td><td>https://www.google.com/accounts/OAuthLogin</td></tr><tr><td>admin-mahesh@rocheua.com</td><td>953348912797-h2fo9tmk42mnrkk0kc6gula9i8ipv3re.apps.googleusercontent.com</td><td>Google AppSheet</td><td>False</td><td>False</td><td>100636443903876274243</td><td>https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets openid https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds</td></tr></tbody></table></div>
+  </div>
+  <div id="t-susp" class="pane">
+    <div class='ok'>No suspended accounts with active OAuth tokens found.</div>
+    <div class="tbl"><p class='empty'>No suspended users with active tokens - good!</p></div>
+  </div>
+</div>
+
+<!-- MARKETPLACE APPS -->
+<div class="sec">
+  <h2>&#128722; Workspace Marketplace &amp; App Details <span class="badge p">4 rows</span></h2>
+  <div class='info'>Built from OAuth token data (best-effort). Not the same as the Admin Console Marketplace list. To get real data run: gam oauth update and enable Chrome Management API or Cloud Identity Policies scope.</div><table><thead><tr><th>AppName</th><th>ClientId</th><th>AuthorizedUsers</th><th>ScopesGranted</th><th>DataSource</th></tr></thead><tbody><tr><td>CustomMigration</td><td>630157742401-7eibo54f36ivjf27rf427k84vajjhsn6.apps.googleusercontent.com</td><td>4</td><td>https://www.googleapis.com/auth/ediscovery.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/apps.groups.settings https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/edi...</td><td>OAuth tokens (no Marketplace API access)</td></tr><tr><td>Google Chrome</td><td>77185425430.apps.googleusercontent.com</td><td>2</td><td>https://www.google.com/accounts/OAuthLogin</td><td>OAuth tokens (no Marketplace API access)</td></tr><tr><td>Google AppSheet</td><td>953348912797-h2fo9tmk42mnrkk0kc6gula9i8ipv3re.apps.googleusercontent.com</td><td>1</td><td>https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets openid https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds</td><td>OAuth tokens (no Marketplace API access)</td></tr><tr><td>Create Test Data - GForms</td><td>777671318188-4cg53vqc19anouln9o7f2j3gdrunkg68.apps.googleusercontent.com</td><td>1</td><td>https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/forms https://www.googleapis.com/auth/drive</td><td>OAuth tokens (no Marketplace API access)</td></tr></tbody></table>
+</div>
+
+<!-- SERVICE ACCOUNTS DWD -->
+<div class="sec">
+  <h2>&#128273; Service Accounts (Domain-Wide Delegation) <span class="badge r">0</span></h2>
+  <div class='warn'>Could not retrieve DwD service accounts via any of the 4 methods attempted.<br><br><strong>To fix:</strong> run <code>gam oauth update</code> and authorise Admin SDK - Other and Cloud Identity - Policies.<br>Or verify manually: Admin Console &gt; Security &gt; API Controls &gt; Domain-wide Delegation.</div>
+</div>
+
+<!-- ADMIN ROLES -->
+<div class="sec">
+  <h2>&#128110; Admin Roles &amp; Delegated Admins <span class="badge">43 assignments</span></h2>
+  <div class="tbl"><table><thead><tr><th>gam.exe : Getting all Admin Role Assignments</th><th>may take some time on a large Google Workspace Account...</th></tr></thead><tbody><tr><td>At C:\Users\v-nmahanthi\OneDrive - Microsoft\Documents\gam7\Get-ConnectedAppsReport.ps1:518 char:11</td><td></td></tr><tr><td>+ $admRaw = &amp; $script:GAM print admins 2&gt;&amp;1</td><td></td></tr><tr><td>+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</td><td></td></tr><tr><td>+ CategoryInfo          : NotSpecified: (Getting all Adm...pace Account...:String) []</td><td>RemoteException</td></tr><tr><td>+ FullyQualifiedErrorId : NativeCommandError</td><td></td></tr><tr><td>Got 36 Admin Role Assignments...</td><td></td></tr><tr><td>roleAssignmentId</td><td>roleId</td></tr><tr><td>8668575980060673</td><td>8668575980060673</td></tr><tr><td>8668575980060684</td><td>8668575980060673</td></tr><tr><td>8668575980060685</td><td>8668575980060673</td></tr><tr><td>8668575980060686</td><td>8668575980060673</td></tr><tr><td>8668575980060687</td><td>8668575980060673</td></tr><tr><td>8668575980060688</td><td>8668575980060673</td></tr><tr><td>8668575980060689</td><td>8668575980060673</td></tr><tr><td>8668575980060690</td><td>8668575980060673</td></tr><tr><td>8668575980060691</td><td>8668575980060673</td></tr><tr><td>8668575980060694</td><td>8668575980060673</td></tr><tr><td>8668575980060695</td><td>8668575980060673</td></tr><tr><td>8668575980060696</td><td>8668575980060673</td></tr><tr><td>8668575980060697</td><td>8668575980060673</td></tr><tr><td>8668575980060698</td><td>8668575980060673</td></tr><tr><td>8668575980060699</td><td>8668575980060673</td></tr><tr><td>8668575980060702</td><td>8668575980060673</td></tr><tr><td>8668575981060673</td><td>8668575980060673</td></tr><tr><td>8668575981060674</td><td>8668575980060673</td></tr><tr><td>8668575981060677</td><td>8668575980060673</td></tr><tr><td>8668575981060678</td><td>8668575980060673</td></tr><tr><td>8668575981060679</td><td>8668575980060673</td></tr><tr><td>8668575981060680</td><td>8668575980060673</td></tr><tr><td>8668575981060681</td><td>8668575980060673</td></tr><tr><td>8668575981060682</td><td>8668575980060673</td></tr><tr><td>8668575981060683</td><td>8668575980060673</td></tr><tr><td>8668575981060684</td><td>8668575980060673</td></tr><tr><td>8668575981060685</td><td>8668575980060673</td></tr><tr><td>8668575981060686</td><td>8668575980060673</td></tr><tr><td>8668575981060687</td><td>8668575980060673</td></tr><tr><td>8668575981060688</td><td>8668575980060673</td></tr><tr><td>8668575981060689</td><td>8668575980060673</td></tr><tr><td>8668575981060690</td><td>8668575980060673</td></tr><tr><td>8668575981060691</td><td>8668575980060673</td></tr><tr><td>8668575981060692</td><td>8668575980060673</td></tr><tr><td>8668575981060693</td><td>8668575980060673</td></tr><tr><td>8668575981060694</td><td>8668575980060673</td></tr></tbody></table></div>
+</div>
+
+<!-- LAST ACTIVITY -->
+<div class="sec">
+  <h2>&#9201; Last Activity per User</h2>
+  <div class='warn'>Not collected. Re-run with <strong>-IncludeLastActivity</strong> to include Drive last-active and login timestamps.</div>
+</div>
+
+<!-- CHAT SPACES -->
+<div class="sec">
+  <h2>&#128172; Google Chat Spaces</h2>
+  <div class='warn'>Not collected. Re-run with <strong>-IncludeChatSpaces</strong> (requires GAM7/GAMADV-XTD3).</div>
+</div>
+
+<!-- ALL USERS -->
+<div class="sec">
+  <h2>&#128101; All Domain Users <span class="badge g">5</span></h2>
+  <div class="tbl"><table><thead><tr><th>primaryEmail</th><th>name.givenName</th><th>name.familyName</th><th>name.fullName</th><th>name.displayName</th><th>lastLoginTime</th><th>suspended</th><th>suspensionReason</th><th>orgUnitPath</th></tr></thead><tbody><tr><td>admin-aishwarya@rocheua.com</td><td>Admin-Aishwarya</td><td>Jayant</td><td>Admin-Aishwarya Jayant</td><td></td><td>2026-04-10T06:30:57Z</td><td>False</td><td></td><td>/</td></tr><tr><td>admin-latha@rocheua.com</td><td>Admin-Latha</td><td>Gannavaram</td><td>Admin-Latha Gannavaram</td><td></td><td>2026-03-17T10:48:32Z</td><td>False</td><td></td><td>/</td></tr><tr><td>admin-madhusudhan@rocheua.com</td><td>Admin-Madhusudhan</td><td>K</td><td>Admin-Madhusudhan K</td><td></td><td>2026-03-18T05:20:36Z</td><td>False</td><td></td><td>/</td></tr><tr><td>admin-mahesh@rocheua.com</td><td>Admin-Mahesh</td><td>Markose</td><td>Admin-Mahesh Markose</td><td></td><td>2026-04-06T07:22:48Z</td><td>False</td><td></td><td>/</td></tr><tr><td>admin-manik@rocheua.com</td><td>ADMIN-Manik</td><td>Jaiswal</td><td>ADMIN-Manik Jaiswal</td><td></td><td>2026-04-07T06:36:00Z</td><td>False</td><td></td><td>/Roche/Users</td></tr></tbody></table></div>
+</div>
+
+<!-- FILES -->
+<div class="sec">
+  <h2>&#128193; Output Files</h2>
+  <table>
+    <thead><tr><th>File</th><th>Description</th><th>Records</th></tr></thead>
+    <tbody>
+      <tr><td>users.csv</td><td>All domain users with status and login time</td><td>5</td></tr>
+      <tr><td>tokens_all_users.csv</td><td>Raw OAuth token records (one row per user per app)</td><td>8</td></tr>
+      <tr><td>apps_aggregated.csv</td><td>Apps aggregated with user lists and scopes</td><td>19</td></tr>
+      <tr><td>app_detail_summary.csv</td><td>Per-app detail: name, org unit, last login, last activity, users, scopes</td><td>4</td></tr>
+      <tr><td>marketplace_apps.csv</td><td>Marketplace app policies</td><td>4</td></tr>
+      <tr><td>service_accounts_dwd.csv</td><td>GCP service accounts with Domain-Wide Delegation</td><td>0</td></tr>
+      <tr><td>admins.csv</td><td>Admin role assignments</td><td>43</td></tr>
+      
+      
+      <tr><td>ConnectedApps_Report.html</td><td>This interactive HTML report</td><td>-</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+<footer>Generated by Get-ConnectedAppsReport.ps1 &nbsp;&middot;&nbsp; Friday 17 Apr 2026, 00:07:08</footer>
+<script>
+function tab(e,id){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on');});
+  e.currentTarget.classList.add('on');
+  document.getElementById(id).classList.add('on');
+}
+</script>
+</body>
+</html>

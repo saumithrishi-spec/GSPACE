@@ -1,0 +1,5 @@
+Command: "C:\Users\v-nmahanthi\OneDrive - Microsoft\Documents\gam7\gam.exe" redirect csv "C:\Users\v-nmahanthi\OneDrive - Microsoft\Documents\gam7\tmp_bots_11.csv" redirect stderr "C:\Users\v-nmahanthi\OneDrive - Microsoft\Documents\gam7\tmp_err_11.txt" user admin-narendra@rocheua.com print chatmembers space spaces/AAQA8X6klLQ >>>asadmin<<< filter "member.type = BOT" fields "name,member,role,state,createtime"
+
+ERROR: Invalid argument
+Help: Syntax in file C:\Users\v-nmahanthi\OneDrive - Microsoft\Documents\gam7\GamCommands.txt
+Help: Documentation is at https://github.com/GAM-team/GAM/wiki

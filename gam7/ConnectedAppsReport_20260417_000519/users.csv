@@ -1,0 +1,6 @@
+"primaryEmail","name.givenName","name.familyName","name.fullName","name.displayName","lastLoginTime","suspended","suspensionReason","orgUnitPath"
+"admin-aishwarya@rocheua.com","Admin-Aishwarya","Jayant","Admin-Aishwarya Jayant","","2026-04-10T06:30:57Z","False","","/"
+"admin-latha@rocheua.com","Admin-Latha","Gannavaram","Admin-Latha Gannavaram","","2026-03-17T10:48:32Z","False","","/"
+"admin-madhusudhan@rocheua.com","Admin-Madhusudhan","K","Admin-Madhusudhan K","","2026-03-18T05:20:36Z","False","","/"
+"admin-mahesh@rocheua.com","Admin-Mahesh","Markose","Admin-Mahesh Markose","","2026-04-06T07:22:48Z","False","","/"
+"admin-manik@rocheua.com","ADMIN-Manik","Jaiswal","ADMIN-Manik Jaiswal","","2026-04-07T06:36:00Z","False","","/Roche/Users"

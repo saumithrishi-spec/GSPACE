@@ -1,0 +1,20 @@
+{
+  "name": "gam7",
+  "version": "1.0.0",
+  "description": "",
+  "main": "02_save_playwright_auth.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
+    "playwright": "^1.58.2"
+  }
+}
