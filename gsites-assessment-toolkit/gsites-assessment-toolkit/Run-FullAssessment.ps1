@@ -183,8 +183,11 @@ function Filter-InventoryBySelectedSites {
     $selected = @(Import-Csv $SelectedSitesCsvPath)
     $selectedNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($row in $selected) {
-        $name = $row.SiteName -or $row.name -or $row.Name -or $row.SITENAME
-        if ($name) { $selectedNames.Add([string]$name) | Out-Null }
+        $name = $row.SiteName
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.name }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.Name }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SITENAME }
+        if (-not [string]::IsNullOrWhiteSpace($name)) { $selectedNames.Add([string]$name.Trim()) | Out-Null }
     }
 
     if ($selectedNames.Count -eq 0) {
@@ -195,7 +198,10 @@ function Filter-InventoryBySelectedSites {
 
     $inventory = @(Import-Csv $InventoryPath)
     $filtered = $inventory | Where-Object {
-        $name = $_.name -or $_.SiteName -or $_.Name -or $_.SITENAME
+        $name = $_.name
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SiteName }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.Name }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SITENAME }
         $selectedNames.Contains([string]$name)
     }
 
@@ -218,7 +224,8 @@ function Filter-InventoryBySelectedSites {
     if (Test-Path $publishedUrlsPath) {
         $published = @(Import-Csv $publishedUrlsPath)
         $filteredPublished = $published | Where-Object {
-            $name = $_.SiteName -or $_.name
+            $name = $_.SiteName
+            if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.name }
             $selectedNames.Contains([string]$name)
         }
         $filteredPublished | Export-Csv -NoTypeInformation -Path $publishedUrlsPath
@@ -230,12 +237,56 @@ function Filter-InventoryBySelectedSites {
     if (Test-Path $permissionsPath) {
         $perms = @(Import-Csv $permissionsPath)
         $filteredPerms = $perms | Where-Object {
-            $name = $_.name -or $_.SiteName
+            $name = $_.name
+            if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SiteName }
             $selectedNames.Contains([string]$name)
         }
         $filteredPerms | Export-Csv -NoTypeInformation -Path $permissionsPath
         Write-Success "Filtered permissions to $($filteredPerms.Count) row(s)"
     }
+}
+
+function Build-GamNameFilter {
+    param([Parameter(Mandatory = $true)][string]$SelectedSitesCsvPath)
+
+    if (-not (Test-Path $SelectedSitesCsvPath)) {
+        return $null
+    }
+
+    $selected = @(Import-Csv $SelectedSitesCsvPath)
+    $names = [System.Collections.Generic.List[string]]::new()
+    foreach ($row in $selected) {
+        $name = $row.SiteName
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.name }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.Name }
+        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SITENAME }
+        if (-not [string]::IsNullOrWhiteSpace($name)) { $names.Add([string]$name.Trim()) | Out-Null }
+    }
+
+    if ($names.Count -eq 0) {
+        Write-Info "No site names found in $SelectedSitesCsvPath. Check the column header (expected SiteName, name, Name, or SITENAME)."
+        return $null
+    }
+
+    Write-Info "Found $($names.Count) site name(s) in selected sites CSV."
+
+    # Escape single quotes for Google Drive API queries (use \')
+    $filterParts = foreach ($name in $names) {
+        $escaped = $name -replace "'", "\'"
+        "name='$escaped'"
+    }
+
+    $filter = $filterParts -join ' or '
+
+    # Google Drive API query length limit is about 1000 chars.
+    # Base query for sites is ~60 chars, so keep filter under ~800.
+    if ($filter.Length -gt 800) {
+        Write-Info "Too many selected sites for a GAM name filter. Running full tenant scan."
+        return $null
+    }
+
+    Write-Info "GAM Sites filter: $filter"
+    return $filter
 }
 
 function Write-LogTail {
@@ -319,14 +370,23 @@ if (-not (Test-Path $LogsDir)) {
 # ============================================================================
 if (-not $SkipGAMExport) {
     Write-Step "STEP 1: GAM Exports"
-    
+
     $gamExportScript = Join-Path $ScriptDir '01_run_gam_exports.cmd'
     if (-not (Test-Path $gamExportScript)) {
         throw "GAM export script not found: $gamExportScript"
     }
-    
+
     Write-Info "Running GAM exports..."
     Write-Info "Progress output is being written to log files. Please wait..."
+
+    # If selected sites are specified, build a GAM name filter for the Sites export
+    if ($SelectedSitesCsv) {
+        $gamFilter = Build-GamNameFilter -SelectedSitesCsvPath $SelectedSitesCsv
+        if ($gamFilter) {
+            [Environment]::SetEnvironmentVariable('GAM_SITES_FILTER', $gamFilter, 'Process')
+            Write-Info "Applying GAM Sites name filter to reduce tenant scan scope."
+        }
+    }
 
     $gamResult = Invoke-LoggedProcess -FilePath 'cmd.exe' -ArgumentList @('/c', "`"$gamExportScript`"") -WorkingDirectory $ScriptDir -LogPrefix '01_gam_exports'
 

@@ -50,33 +50,56 @@ if not exist "%GAM_PATH%" (
 )
 echo [GAM] Using GAM at: %GAM_PATH%
 
+REM Build Sites query if a name filter was provided by the orchestrator
+if defined GAM_SITES_FILTER (
+    set "SITES_QUERY=mimeType='application/vnd.google-apps.site' and trashed=false and (%GAM_SITES_FILTER%)"
+    echo [INFO] Restricting Sites scan to selected site names
+) else (
+    set "SITES_QUERY=mimeType='application/vnd.google-apps.site' and trashed=false"
+)
+
 echo [1/6] Minimal Google Sites sanity export...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess redirect stderr - multiprocess all users print filelist fields id,name,mimetype filepath showmimetype gsite
+if defined GAM_SITES_FILTER (
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,mimetype
+) else (
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess redirect stderr - multiprocess all users print filelist fields id,name,mimetype filepath showmimetype gsite
+)
 if errorlevel 1 goto :fail
 
 echo [2/6] Detailed Google Sites inventory...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Detailed.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.site' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid,size,quotabytesused,version,viewedbymetime,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled,starred,modifiedbyme,modifiedbymetime,viewedbyme,explicitlytrashed,spaces,thumbnaillink,thumbnailversion,hasthumbnail,exportlinks
+"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Detailed.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid,size,quotabytesused,version,viewedbymetime,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled,starred,modifiedbyme,modifiedbymetime,viewedbyme,explicitlytrashed,spaces,thumbnaillink,thumbnailversion,hasthumbnail,exportlinks
 if errorlevel 1 goto :fail
 
 echo [3/6] Google Sites permissions and security...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Permissions.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.site' and trashed=false" fields id,name,webviewlink,owners,basicpermissions,shared,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled oneitemperrow
+"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Permissions.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,webviewlink,owners,basicpermissions,shared,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled oneitemperrow
 if errorlevel 1 goto :fail
 
-echo [4/6] Broad candidate Google Sheets inventory...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Sheets.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
-if errorlevel 1 goto :fail
+REM Skip full-tenant candidate exports when doing a targeted site run
+if defined GAM_SITES_FILTER (
+    echo [4/6] Skipping broad candidate Google Sheets inventory (targeted run).
+    echo [5/6] Skipping broad candidate Google Forms inventory (targeted run).
+    echo [6/6] Skipping broad candidate Apps Script inventory (targeted run).
+) else (
+    echo [4/6] Broad candidate Google Sheets inventory...
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Sheets.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    if errorlevel 1 goto :fail
 
-echo [5/6] Broad candidate Google Forms inventory...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Forms.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.form' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
-if errorlevel 1 goto :fail
+    echo [5/6] Broad candidate Google Forms inventory...
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Forms.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.form' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    if errorlevel 1 goto :fail
 
-echo [6/6] Broad candidate Apps Script inventory...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Scripts.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.script' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
-if errorlevel 1 goto :fail
+    echo [6/6] Broad candidate Apps Script inventory...
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Scripts.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.script' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    if errorlevel 1 goto :fail
+)
 
 echo.
 echo GAM exports completed successfully.
 echo Output folder: %OUTDIR%
+
+REM Clean up environment variable so it does not affect future runs
+set GAM_SITES_FILTER=
+set SITES_QUERY=
 
 echo Cleaning CSV headers...
 powershell -NoProfile -Command "Get-ChildItem '%OUTDIR%\*.csv' | ForEach-Object { $lines = @(Get-Content $_.FullName); if ($lines.Count -gt 0) { $lines[0] = $lines[0] -replace '\.[0-9]+\.', '.'; $lines | Set-Content $_.FullName } }"
