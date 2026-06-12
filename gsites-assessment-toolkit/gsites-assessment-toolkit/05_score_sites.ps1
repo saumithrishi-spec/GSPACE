@@ -6,7 +6,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$sites = Import-Csv (Join-Path $OutputDir '02_GSites_Inventory_Detailed.csv')
+$sites = Import-Csv (Join-Path $OutputDir 'GSites_Inventory_Detailed.csv')
 $permissions = @()
 $pages = @()
 $embeds = @()
@@ -15,13 +15,13 @@ $sheetEnrichment = @()
 $formEnrichment = @()
 $scriptEnrichment = @()
 
-if (Test-Path (Join-Path $OutputDir '03_GSites_Permissions.csv')) { $permissions = Import-Csv (Join-Path $OutputDir '03_GSites_Permissions.csv') }
-if (Test-Path (Join-Path $OutputDir '07_Pages.csv')) { $pages = Import-Csv (Join-Path $OutputDir '07_Pages.csv') }
-if (Test-Path (Join-Path $OutputDir '08_Embeds.csv')) { $embeds = Import-Csv (Join-Path $OutputDir '08_Embeds.csv') }
-if (Test-Path (Join-Path $OutputDir '09_ExternalDomains.csv')) { $externalDomains = Import-Csv (Join-Path $OutputDir '09_ExternalDomains.csv') }
-if (Test-Path (Join-Path $OutputDir '11_Sheets_Enrichment.csv')) { $sheetEnrichment = Import-Csv (Join-Path $OutputDir '11_Sheets_Enrichment.csv') }
-if (Test-Path (Join-Path $OutputDir '12_Forms_Enrichment.csv')) { $formEnrichment = Import-Csv (Join-Path $OutputDir '12_Forms_Enrichment.csv') }
-if (Test-Path (Join-Path $OutputDir '13_Scripts_Enrichment.csv')) { $scriptEnrichment = Import-Csv (Join-Path $OutputDir '13_Scripts_Enrichment.csv') }
+if (Test-Path (Join-Path $OutputDir 'GSites_Permissions.csv')) { $permissions = Import-Csv (Join-Path $OutputDir 'GSites_Permissions.csv') }
+if (Test-Path (Join-Path $OutputDir 'Pages.csv')) { $pages = Import-Csv (Join-Path $OutputDir 'Pages.csv') }
+if (Test-Path (Join-Path $OutputDir 'Embeds.csv')) { $embeds = Import-Csv (Join-Path $OutputDir 'Embeds.csv') }
+if (Test-Path (Join-Path $OutputDir 'ExternalDomains.csv')) { $externalDomains = Import-Csv (Join-Path $OutputDir 'ExternalDomains.csv') }
+if (Test-Path (Join-Path $OutputDir 'Sheets_Enrichment.csv')) { $sheetEnrichment = Import-Csv (Join-Path $OutputDir 'Sheets_Enrichment.csv') }
+if (Test-Path (Join-Path $OutputDir 'Forms_Enrichment.csv')) { $formEnrichment = Import-Csv (Join-Path $OutputDir 'Forms_Enrichment.csv') }
+if (Test-Path (Join-Path $OutputDir 'Scripts_Enrichment.csv')) { $scriptEnrichment = Import-Csv (Join-Path $OutputDir 'Scripts_Enrichment.csv') }
 
 $report = New-Object System.Collections.Generic.List[object]
 
@@ -93,5 +93,5 @@ foreach ($site in $sites) {
         })
 }
 
-$report | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir '14_Complexity_Report.csv')
-Write-Host 'Scoring completed. Output: 14_Complexity_Report.csv'
+$report | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir 'Complexity_Report.csv')
+Write-Host 'Scoring completed. Output: Complexity_Report.csv'

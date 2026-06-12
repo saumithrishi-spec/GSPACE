@@ -16,7 +16,7 @@ if ([string]::IsNullOrWhiteSpace($AccessToken)) {
     throw 'Provide -AccessToken or set GCP_ACCESS_TOKEN.'
 }
 
-$embedsFile = Join-Path $OutputDir '08_Embeds.csv'
+$embedsFile = Join-Path $OutputDir 'Embeds.csv'
 
 $embedRows = @()
 if (Test-Path $embedsFile) { $embedRows = Import-Csv $embedsFile }
@@ -27,7 +27,7 @@ Group-Object ArtifactUrl | ForEach-Object { $_.Group[0] }
 # Sheets and Scripts enrichment skipped — the Apps Script and Sheets APIs return 403
 # for this account. Empty output files are written to keep downstream steps intact.
 Write-Host "  [SKIP] Sheets enrichment (account lacks Sheets API access — 403)"
-@() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir '11_Sheets_Enrichment.csv')
+@() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir 'Sheets_Enrichment.csv')
 
 Write-Host "  Enriching $(@($linkedForms).Count) forms (parallel, throttle=$ThrottleLimit)..."
 $formBag = [System.Collections.Concurrent.ConcurrentBag[object]]::new()
@@ -71,11 +71,11 @@ $linkedForms | ForEach-Object -Parallel {
             ComplexityPoints = (($qCount * 2) + ($sCount * 3))
         })
 } -ThrottleLimit $ThrottleLimit
-if ($formBag.Count -gt 0) { $formBag | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir '12_Forms_Enrichment.csv') }
-else { @() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir '12_Forms_Enrichment.csv') }
+if ($formBag.Count -gt 0) { $formBag | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir 'Forms_Enrichment.csv') }
+else { @() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir 'Forms_Enrichment.csv') }
 Write-Host "  Forms done: $($formBag.Count) enriched"
 
 Write-Host "  [SKIP] Scripts enrichment (account lacks Apps Script API access — 403)"
-@() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir '13_Scripts_Enrichment.csv')
+@() | Export-Csv -NoTypeInformation -Path (Join-Path $OutputDir 'Scripts_Enrichment.csv')
 
 Write-Host 'Artifact enrichment completed.'

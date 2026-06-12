@@ -131,10 +131,10 @@ All output is written to the `output\` folder:
 
 | File | Contents |
 |---|---|
-| `02_GSites_Inventory_Detailed.csv` | Full site inventory from GAM |
-| `03_GSites_Permissions.csv` | Site-level permission rows |
-| `07_Pages.csv` | Pages crawled per site |
-| `08_Embeds.csv` | Embedded content found on each page |
-| `09_ExternalDomains.csv` | External domains referenced |
-| `12_Forms_Enrichment.csv` | Google Forms metadata |
-| `14_Complexity_Report.csv` | Final complexity score per site |
+| `GSites_Inventory_Detailed.csv` | Full site inventory from GAM |
+| `GSites_Permissions.csv` | Site-level permission rows |
+| `Pages.csv` | Pages crawled per site |
+| `Embeds.csv` | Embedded content found on each page |
+| `ExternalDomains.csv` | External domains referenced |
+| `Forms_Enrichment.csv` | Google Forms metadata |
+| `Complexity_Report.csv` | Final complexity score per site |

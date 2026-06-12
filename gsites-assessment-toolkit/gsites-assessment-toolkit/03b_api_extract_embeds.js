@@ -6,12 +6,12 @@
  * browser, no Playwright auth session, and runs in minutes instead of hours.
  *
  * Requires: GCP_ACCESS_TOKEN env var (scope: sites.readonly)
- * Input:    output/02_GSites_Inventory_Detailed.csv
- *           output/02a_Sites_Published_URLs.csv   (optional)
- * Output:   output/07_Pages.csv
- *           output/08_Embeds.csv
- *           output/09_ExternalDomains.csv
- *           output/10_NetworkRequests.csv  (empty — no browser used)
+ * Input:    output/GSites_Inventory_Detailed.csv
+ *           output/Sites_Published_URLs.csv   (optional)
+ * Output:   output/Pages.csv
+ *           output/Embeds.csv
+ *           output/ExternalDomains.csv
+ *           output/NetworkRequests.csv  (empty — no browser used)
  */
 
 const fs = require('fs');
@@ -20,8 +20,8 @@ const https = require('https');
 const { parse } = require('csv-parse/sync');
 const { stringify } = require('csv-stringify/sync');
 
-const inputCsv = path.resolve(__dirname, 'output', '02_GSites_Inventory_Detailed.csv');
-const publishedUrlsCsv = path.resolve(__dirname, 'output', '02a_Sites_Published_URLs.csv');
+const inputCsv = path.resolve(__dirname, 'output', 'GSites_Inventory_Detailed.csv');
+const publishedUrlsCsv = path.resolve(__dirname, 'output', 'Sites_Published_URLs.csv');
 const outputDir = path.resolve(__dirname, 'output');
 const accessToken = process.env.GCP_ACCESS_TOKEN || process.argv[2];
 const maxSites = Number(process.env.MAX_SITES || 0);   // 0 = all
@@ -49,10 +49,10 @@ function readCsv(file) {
 // Write column headers once at startup, then append rows per site as they finish.
 // Node.js is single-threaded so concurrent appendFileSync calls never interleave.
 const OUTPUT_FILES = {
-  pages: path.join(outputDir, '07_Pages.csv'),
-  embeds: path.join(outputDir, '08_Embeds.csv'),
-  domains: path.join(outputDir, '09_ExternalDomains.csv'),
-  network: path.join(outputDir, '10_NetworkRequests.csv'),
+  pages: path.join(outputDir, 'Pages.csv'),
+  embeds: path.join(outputDir, 'Embeds.csv'),
+  domains: path.join(outputDir, 'ExternalDomains.csv'),
+  network: path.join(outputDir, 'NetworkRequests.csv'),
 };
 const CSV_COLS = {
   pages: ['SiteId', 'SiteName', 'SiteUrl', 'PageUrl', 'PageTitle', 'Depth', 'InternalLinksDiscovered', 'EmbedCount', 'HtmlSnapshot', 'CrawlStatus'],
@@ -356,5 +356,5 @@ async function processSite(site, publishedMap, totalInRun) {
   console.log(`Sites processed : ${sitesData.length}`);
   console.log(`Elapsed time    : ${elapsed}s`);
   console.log(`Output folder   : ${outputDir}`);
-  console.log('Output files    : 07_Pages.csv, 08_Embeds.csv, 09_ExternalDomains.csv');
+  console.log('Output files    : Pages.csv, Embeds.csv, ExternalDomains.csv');
 })();

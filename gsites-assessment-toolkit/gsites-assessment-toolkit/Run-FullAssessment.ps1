@@ -137,6 +137,16 @@ function Get-CsvRowCount {
     return $rows.Count
 }
 
+function Normalize-CsvHeaders {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-Path $Path)) { return }
+    $lines = @(Get-Content $Path)
+    if ($lines.Count -eq 0) { return }
+    # Remove numeric array indices like .0. .1. from the header row
+    $lines[0] = $lines[0] -replace '\.[0-9]+\.', '.'
+    $lines | Set-Content $Path
+}
+
 function Write-LogTail {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -241,12 +251,12 @@ if (-not $SkipGAMExport) {
 
     # Verify output files
     $requiredFiles = @(
-        '01_GSites_Inventory_Min.csv',
-        '02_GSites_Inventory_Detailed.csv',
-        '03_GSites_Permissions.csv',
-        '04_Candidate_Sheets.csv',
-        '05_Candidate_Forms.csv',
-        '06_Candidate_Scripts.csv'
+        'GSites_Inventory_Min.csv',
+        'GSites_Inventory_Detailed.csv',
+        'GSites_Permissions.csv',
+        'Candidate_Sheets.csv',
+        'Candidate_Forms.csv',
+        'Candidate_Scripts.csv'
     )
 
     foreach ($file in $requiredFiles) {
@@ -254,6 +264,7 @@ if (-not $SkipGAMExport) {
         if (Test-Path $filePath) {
             $rowCount = Get-CsvRowCount -Path $filePath
             Write-Info "  [OK] $file ($rowCount rows)"
+            Normalize-CsvHeaders -Path $filePath
         }
         else {
             Write-Error-Custom "  [MISSING] $file"
@@ -375,7 +386,7 @@ else {
 if (-not $SkipCrawl) {
     Write-Step "STEP 4A: Get Published URLs from Sites API"
 
-    $inventoryFile = Join-Path $OutputDir '02_GSites_Inventory_Detailed.csv'
+    $inventoryFile = Join-Path $OutputDir 'GSites_Inventory_Detailed.csv'
     if (-not (Test-Path $inventoryFile)) {
         throw "Inventory file not found: $inventoryFile. Run GAM export first."
     }
@@ -444,12 +455,12 @@ if (-not $SkipCrawl) {
             & node $publishedUrlScript
             Pop-Location
 
-            $publishedUrlsFile = Join-Path $OutputDir '02a_Sites_Published_URLs.csv'
+            $publishedUrlsFile = Join-Path $OutputDir 'Sites_Published_URLs.csv'
             if (Test-Path $publishedUrlsFile) {
                 $publishedData = @(Import-Csv $publishedUrlsFile | Where-Object { $_.PublishedUrl -and $_.PublishedUrl -ne '' })
                 $publishedCount = $publishedData.Count
                 Write-Success "Published URLs retrieved: $publishedCount of $siteCount sites"
-                Write-Info "  Output: 02a_Sites_Published_URLs.csv"
+                Write-Info "  Output: Sites_Published_URLs.csv"
 
                 if ($publishedCount -eq 0) {
                     Write-Host ""
@@ -495,7 +506,7 @@ if (-not $SkipCrawl) {
 if (-not $SkipCrawl) {
     Write-Step "STEP 4B: Site Crawling with Playwright"
 
-    $inventoryFile = Join-Path $OutputDir '02_GSites_Inventory_Detailed.csv'
+    $inventoryFile = Join-Path $OutputDir 'GSites_Inventory_Detailed.csv'
     $siteCount = (Import-Csv $inventoryFile).Count
     Write-Info "Total sites in inventory : $siteCount"
     Write-Info "Max pages per site       : $MaxPagesPerSite"
@@ -554,10 +565,10 @@ if (-not $SkipCrawl) {
 
         # Verify crawl output
         $crawlOutputFiles = @(
-            '07_Pages.csv',
-            '08_Embeds.csv',
-            '09_ExternalDomains.csv',
-            '10_NetworkRequests.csv'
+            'Pages.csv',
+            'Embeds.csv',
+            'ExternalDomains.csv',
+            'NetworkRequests.csv'
         )
 
         foreach ($file in $crawlOutputFiles) {
@@ -668,9 +679,9 @@ if (-not $SkipEnrichment) {
     # Verify enrichment output (only if token was available)
     if ($tokenAvailable) {
         $enrichOutputFiles = @(
-            '11_Sheets_Enrichment.csv',
-            '12_Forms_Enrichment.csv',
-            '13_Scripts_Enrichment.csv'
+            'Sheets_Enrichment.csv',
+            'Forms_Enrichment.csv',
+            'Scripts_Enrichment.csv'
         )
 
         foreach ($file in $enrichOutputFiles) {
@@ -701,10 +712,10 @@ Write-Info "Generating complexity report..."
 
 Write-Success "Complexity scoring completed"
 
-$reportFile = Join-Path $OutputDir '14_Complexity_Report.csv'
+$reportFile = Join-Path $OutputDir 'Complexity_Report.csv'
 if (Test-Path $reportFile) {
     $report = Import-Csv $reportFile
-    Write-Info "   14_Complexity_Report.csv ($($report.Count) sites)"
+    Write-Info "   Complexity_Report.csv ($($report.Count) sites)"
 
     # Summary statistics
     Write-Host ""
@@ -743,7 +754,7 @@ foreach ($file in $allOutputFiles) {
 
 Write-Host ""
 Write-Host "NEXT STEPS:" -ForegroundColor Cyan
-Write-Host "  1. Review the complexity report: 14_Complexity_Report.csv" -ForegroundColor Gray
+Write-Host "  1. Review the complexity report: Complexity_Report.csv" -ForegroundColor Gray
 Write-Host "  2. Analyze high-complexity sites for migration planning" -ForegroundColor Gray
 Write-Host "  3. Review HTML snapshots in output/html/ folder" -ForegroundColor Gray
 Write-Host ""

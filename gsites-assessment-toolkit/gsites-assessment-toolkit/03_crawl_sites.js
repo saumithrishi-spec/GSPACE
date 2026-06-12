@@ -4,8 +4,8 @@ const path = require('path');
 const { parse } = require('csv-parse/sync');
 const { stringify } = require('csv-stringify/sync');
 
-const inputCsv = process.argv[2] || path.resolve(__dirname, 'output', '02_GSites_Inventory_Detailed.csv');
-const publishedUrlsCsv = path.resolve(__dirname, 'output', '02a_Sites_Published_URLs.csv');
+const inputCsv = process.argv[2] || path.resolve(__dirname, 'output', 'GSites_Inventory_Detailed.csv');
+const publishedUrlsCsv = path.resolve(__dirname, 'output', 'Sites_Published_URLs.csv');
 const outputDir = path.resolve(__dirname, 'output');
 const authFile = path.resolve(__dirname, '.auth', 'state.json');
 const maxPagesPerSite = Number(process.argv[3] || process.env.MAX_PAGES_PER_SITE || 200);
@@ -281,10 +281,10 @@ function sameHost(candidate, rootUrl) {
 
   await browser.close();
 
-  writeCsv(path.join(outputDir, '07_Pages.csv'), pagesOut);
-  writeCsv(path.join(outputDir, '08_Embeds.csv'), embedsOut);
-  writeCsv(path.join(outputDir, '09_ExternalDomains.csv'), externalDomainsOut);
-  writeCsv(path.join(outputDir, '10_NetworkRequests.csv'), requestsOut);
+  writeCsv(path.join(outputDir, 'Pages.csv'), pagesOut);
+  writeCsv(path.join(outputDir, 'Embeds.csv'), embedsOut);
+  writeCsv(path.join(outputDir, 'ExternalDomains.csv'), externalDomainsOut);
+  writeCsv(path.join(outputDir, 'NetworkRequests.csv'), requestsOut);
 
   console.log('Crawl complete. Outputs written to output folder.');
 })();

@@ -4,8 +4,8 @@
  * This script fetches the published URLs for Google Sites which are needed
  * for crawling (edit URLs return 403 errors).
  * 
- * Input: 02_GSites_Inventory_Detailed.csv
- * Output: 02a_Sites_Published_URLs.csv
+ * Input: GSites_Inventory_Detailed.csv
+ * Output: Sites_Published_URLs.csv
  */
 
 const fs = require('fs');
@@ -14,8 +14,8 @@ const https = require('https');
 const { parse } = require('csv-parse/sync');
 const { stringify } = require('csv-stringify/sync');
 
-const inputCsv = path.resolve(__dirname, 'output', '02_GSites_Inventory_Detailed.csv');
-const outputCsv = path.resolve(__dirname, 'output', '02a_Sites_Published_URLs.csv');
+const inputCsv = path.resolve(__dirname, 'output', 'GSites_Inventory_Detailed.csv');
+const outputCsv = path.resolve(__dirname, 'output', 'Sites_Published_URLs.csv');
 // Trim removes any \r\n that gcloud or PowerShell Receive-Job appends,
 // which would corrupt the "Bearer <token>" Authorization header → HTTP 401.
 const accessToken = (process.env.GCP_ACCESS_TOKEN || process.argv[2] || '').trim();
