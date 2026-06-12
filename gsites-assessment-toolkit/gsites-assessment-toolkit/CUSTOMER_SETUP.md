@@ -110,6 +110,12 @@ This is used to distinguish internal users from external users in permission ana
 .\Run-FullAssessment.ps1 -PrimaryDomain "yourcompany.com" -SkipGAMExport -SkipBrowserAuth -UseApiExtract
 ```
 
+**Run for a selected subset of sites (useful for large tenants):**
+```powershell
+# Create a CSV with one column named SiteName containing the site names to process
+.\Run-FullAssessment.ps1 -PrimaryDomain "yourcompany.com" -SkipGAMExport -SkipBrowserAuth -SelectedSitesCsv "selected_sites.csv"
+```
+
 ---
 
 ## Customer Changes Summary

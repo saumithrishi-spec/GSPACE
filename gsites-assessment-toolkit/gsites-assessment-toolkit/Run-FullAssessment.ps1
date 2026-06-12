@@ -70,6 +70,17 @@
 .EXAMPLE
     # Use the fast Sites API extractor instead of the Playwright crawler
     .\Run-FullAssessment.ps1 -PrimaryDomain "rocheua.com" -SkipGAMExport -SkipBrowserAuth -UseApiExtract -AccessToken "ya29...."
+
+.PARAMETER SelectedSitesCsv
+    Path to a CSV file containing a list of specific site names to process.
+    Only these sites will be crawled, enriched, and scored. Useful for large
+    tenants where processing all sites is not feasible. The CSV must contain
+    a column named SiteName, name, or Name.
+
+    Example CSV:
+        SiteName
+        My First Site
+        Another Site
 #>
 
 param(
@@ -91,7 +102,10 @@ param(
     # Use Sites API v1 extractor instead of Playwright crawler for Step 4B
     [switch]$UseApiExtract,
 
-    [string]$AccessToken
+    [string]$AccessToken,
+
+    # Filter to a specific list of sites (for large tenants)
+    [string]$SelectedSitesCsv
 )
 
 Set-StrictMode -Version Latest
@@ -145,6 +159,74 @@ function Normalize-CsvHeaders {
     # Remove numeric array indices like .0. .1. from the header row
     $lines[0] = $lines[0] -replace '\.[0-9]+\.', '.'
     $lines | Set-Content $Path
+}
+
+function Filter-InventoryBySelectedSites {
+    param(
+        [Parameter(Mandatory = $true)][string]$InventoryPath,
+        [Parameter(Mandatory = $true)][string]$SelectedSitesCsvPath
+    )
+
+    if (-not (Test-Path $SelectedSitesCsvPath)) {
+        throw "Selected sites CSV not found: $SelectedSitesCsvPath"
+    }
+
+    $selected = @(Import-Csv $SelectedSitesCsvPath)
+    $selectedNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($row in $selected) {
+        $name = $row.SiteName -or $row.name -or $row.Name -or $row.SITENAME
+        if ($name) { $selectedNames.Add([string]$name) | Out-Null }
+    }
+
+    if ($selectedNames.Count -eq 0) {
+        throw "No site names found in $SelectedSitesCsvPath. Expected column: SiteName, name, or Name"
+    }
+
+    Write-Info "Filtering inventory to $($selectedNames.Count) selected site name(s)..."
+
+    $inventory = @(Import-Csv $InventoryPath)
+    $filtered = $inventory | Where-Object {
+        $name = $_.name -or $_.SiteName -or $_.Name -or $_.SITENAME
+        $selectedNames.Contains([string]$name)
+    }
+
+    if ($filtered.Count -eq 0) {
+        throw "None of the selected site names were found in the inventory. Check the names in $SelectedSitesCsvPath"
+    }
+
+    # Backup original inventory if not already backed up
+    $backupPath = "$InventoryPath.full"
+    if (-not (Test-Path $backupPath)) {
+        Copy-Item $InventoryPath $backupPath
+        Write-Success "Backed up full inventory to $(Split-Path $backupPath -Leaf)"
+    }
+
+    $filtered | Export-Csv -NoTypeInformation -Path $InventoryPath
+    Write-Success "Filtered inventory written to $(Split-Path $InventoryPath -Leaf) ($($filtered.Count) sites)"
+
+    # Also filter published URLs if they exist to avoid unnecessary API calls
+    $publishedUrlsPath = Join-Path (Split-Path $InventoryPath) 'Sites_Published_URLs.csv'
+    if (Test-Path $publishedUrlsPath) {
+        $published = @(Import-Csv $publishedUrlsPath)
+        $filteredPublished = $published | Where-Object {
+            $name = $_.SiteName -or $_.name
+            $selectedNames.Contains([string]$name)
+        }
+        $filteredPublished | Export-Csv -NoTypeInformation -Path $publishedUrlsPath
+        Write-Success "Filtered published URLs to $($filteredPublished.Count) site(s)"
+    }
+
+    # Also filter permissions if they exist to keep scoring consistent
+    $permissionsPath = Join-Path (Split-Path $InventoryPath) 'GSites_Permissions.csv'
+    if (Test-Path $permissionsPath) {
+        $perms = @(Import-Csv $permissionsPath)
+        $filteredPerms = $perms | Where-Object {
+            $name = $_.name -or $_.SiteName
+            $selectedNames.Contains([string]$name)
+        }
+        $filteredPerms | Export-Csv -NoTypeInformation -Path $permissionsPath
+        Write-Success "Filtered permissions to $($filteredPerms.Count) row(s)"
+    }
 }
 
 function Write-LogTail {
@@ -273,6 +355,15 @@ if (-not $SkipGAMExport) {
 }
 else {
     Write-Step "STEP 1: GAM Exports (SKIPPED)"
+}
+
+# Filter inventory to selected sites if a CSV is provided
+if ($SelectedSitesCsv) {
+    $inventoryFile = Join-Path $OutputDir 'GSites_Inventory_Detailed.csv'
+    if (-not (Test-Path $inventoryFile)) {
+        throw "Inventory file not found: $inventoryFile. Cannot apply -SelectedSitesCsv filter."
+    }
+    Filter-InventoryBySelectedSites -InventoryPath $inventoryFile -SelectedSitesCsvPath $SelectedSitesCsv
 }
 
 # ============================================================================
