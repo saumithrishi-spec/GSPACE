@@ -169,6 +169,20 @@ function Get-CsvRowCount {
     return $rows.Count
 }
 
+function Get-SafeProperty {
+    param(
+        [Parameter(Mandatory = $true)][psobject]$InputObject,
+        [Parameter(Mandatory = $true)][string[]]$PropertyNames
+    )
+    foreach ($prop in $PropertyNames) {
+        $p = $InputObject.psobject.Properties[$prop]
+        if ($null -ne $p -and -not [string]::IsNullOrWhiteSpace($p.Value)) {
+            return [string]$p.Value
+        }
+    }
+    return $null
+}
+
 function Normalize-CsvHeaders {
     param([Parameter(Mandatory = $true)][string]$Path)
     if (-not (Test-Path $Path)) { return }
@@ -192,15 +206,7 @@ function Filter-InventoryBySelectedSites {
     $selected = @(Import-Csv $SelectedSitesCsvPath)
     $selectedNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($row in $selected) {
-        $name = $row.SiteName
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.name }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.Name }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SITENAME }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SiteUrl }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.url }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.URL }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SiteURL }
-
+        $name = Get-SafeProperty -InputObject $row -PropertyNames @('SiteName', 'name', 'Name', 'SITENAME', 'SiteUrl', 'url', 'URL', 'SiteURL')
         $name = Extract-SiteNameFromValue -Value $name
         if (-not [string]::IsNullOrWhiteSpace($name)) { $selectedNames.Add([string]$name.Trim()) | Out-Null }
     }
@@ -213,14 +219,12 @@ function Filter-InventoryBySelectedSites {
 
     $inventory = @(Import-Csv $InventoryPath)
     $filtered = $inventory | Where-Object {
-        $name = $_.name
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SiteName }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.Name }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SITENAME }
+        $name = Get-SafeProperty -InputObject $_ -PropertyNames @('name', 'SiteName', 'Name', 'SITENAME')
 
         $urlName = $null
-        if (-not [string]::IsNullOrWhiteSpace($_.webviewlink)) {
-            $urlName = Extract-SiteNameFromValue -Value $_.webviewlink
+        $webviewlink = Get-SafeProperty -InputObject $_ -PropertyNames @('webviewlink')
+        if (-not [string]::IsNullOrWhiteSpace($webviewlink)) {
+            $urlName = Extract-SiteNameFromValue -Value $webviewlink
         }
 
         $selectedNames.Contains([string]$name) -or $selectedNames.Contains([string]$urlName)
@@ -245,8 +249,7 @@ function Filter-InventoryBySelectedSites {
     if (Test-Path $publishedUrlsPath) {
         $published = @(Import-Csv $publishedUrlsPath)
         $filteredPublished = $published | Where-Object {
-            $name = $_.SiteName
-            if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.name }
+            $name = Get-SafeProperty -InputObject $_ -PropertyNames @('SiteName', 'name')
             $selectedNames.Contains([string]$name)
         }
         $filteredPublished | Export-Csv -NoTypeInformation -Path $publishedUrlsPath
@@ -258,8 +261,7 @@ function Filter-InventoryBySelectedSites {
     if (Test-Path $permissionsPath) {
         $perms = @(Import-Csv $permissionsPath)
         $filteredPerms = $perms | Where-Object {
-            $name = $_.name
-            if ([string]::IsNullOrWhiteSpace($name)) { $name = $_.SiteName }
+            $name = Get-SafeProperty -InputObject $_ -PropertyNames @('name', 'SiteName')
             $selectedNames.Contains([string]$name)
         }
         $filteredPerms | Export-Csv -NoTypeInformation -Path $permissionsPath
@@ -294,15 +296,7 @@ function Build-GamNameFilter {
     $selected = @(Import-Csv $SelectedSitesCsvPath)
     $names = [System.Collections.Generic.List[string]]::new()
     foreach ($row in $selected) {
-        $name = $row.SiteName
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.name }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.Name }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SITENAME }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SiteUrl }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.url }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.URL }
-        if ([string]::IsNullOrWhiteSpace($name)) { $name = $row.SiteURL }
-
+        $name = Get-SafeProperty -InputObject $row -PropertyNames @('SiteName', 'name', 'Name', 'SITENAME', 'SiteUrl', 'url', 'URL', 'SiteURL')
         $name = Extract-SiteNameFromValue -Value $name
         if (-not [string]::IsNullOrWhiteSpace($name)) { $names.Add([string]$name.Trim()) | Out-Null }
     }
@@ -346,11 +340,7 @@ function Build-GamTargetUsersFile {
     $selected = @(Import-Csv $CsvPath)
     $emails = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($row in $selected) {
-        $email = $row.Owner
-        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.OwnerEmail }
-        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.User }
-        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.UserEmail }
-        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.Email }
+        $email = Get-SafeProperty -InputObject $row -PropertyNames @('Owner', 'OwnerEmail', 'User', 'UserEmail', 'Email', 'primaryEmail')
 
         if (-not [string]::IsNullOrWhiteSpace($email) -and $email -match '@') {
             $emails.Add([string]$email.Trim()) | Out-Null
