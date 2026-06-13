@@ -120,7 +120,10 @@ param(
     [string]$SelectedSitesCsv,
 
     # Provide an existing inventory CSV if skipping GAM export
-    [string]$InventoryCsv
+    [string]$InventoryCsv,
+
+    # Filter to a specific list of target users
+    [string]$TargetUsersCsv
 )
 
 Set-StrictMode -Version Latest
@@ -330,6 +333,41 @@ function Build-GamNameFilter {
     return $filter
 }
 
+function Build-GamTargetUsersFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$CsvPath,
+        [Parameter(Mandatory = $true)][string]$OutputDir
+    )
+
+    if (-not (Test-Path $CsvPath)) {
+        return $null
+    }
+
+    $selected = @(Import-Csv $CsvPath)
+    $emails = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($row in $selected) {
+        $email = $row.Owner
+        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.OwnerEmail }
+        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.User }
+        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.UserEmail }
+        if ([string]::IsNullOrWhiteSpace($email)) { $email = $row.Email }
+
+        if (-not [string]::IsNullOrWhiteSpace($email) -and $email -match '@') {
+            $emails.Add([string]$email.Trim()) | Out-Null
+        }
+    }
+
+    if ($emails.Count -eq 0) {
+        return $null
+    }
+
+    Write-Info "Found $($emails.Count) specific user email(s) in selected sites CSV. Restricting GAM scan to these users."
+
+    $targetFile = Join-Path $OutputDir 'gam_target_users.txt'
+    $emails | Set-Content -Path $targetFile
+    return $targetFile
+}
+
 function Write-LogTail {
     param(
         [Parameter(Mandatory = $true)][string]$Path,
@@ -426,6 +464,19 @@ if (-not $SkipGAMExport) {
         if ($gamFilter) {
             [Environment]::SetEnvironmentVariable('GAM_SITES_FILTER', $gamFilter, 'Process')
             Write-Info "Applying GAM Sites name filter to reduce tenant scan scope."
+        }
+
+        # Check if users/owners were provided to avoid scanning all users
+        $gamTargetFile = Build-GamTargetUsersFile -CsvPath $SelectedSitesCsv -OutputDir $OutputDir
+        if ($gamTargetFile) {
+            [Environment]::SetEnvironmentVariable('GAM_TARGET_FILE', $gamTargetFile, 'Process')
+        }
+    } elseif ($TargetUsersCsv) {
+        $gamTargetFile = Build-GamTargetUsersFile -CsvPath $TargetUsersCsv -OutputDir $OutputDir
+        if ($gamTargetFile) {
+            [Environment]::SetEnvironmentVariable('GAM_TARGET_FILE', $gamTargetFile, 'Process')
+        } else {
+            throw "No user emails found in $TargetUsersCsv. Expected column: Email, User, Owner, or OwnerEmail."
         }
     }
 

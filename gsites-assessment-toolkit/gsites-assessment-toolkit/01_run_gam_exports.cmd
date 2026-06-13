@@ -58,20 +58,31 @@ if defined GAM_SITES_FILTER (
     set "SITES_QUERY=mimeType='application/vnd.google-apps.site' and trashed=false"
 )
 
+if defined GAM_TARGET_FILE (
+    set GAM_USER_TARGET=file "%GAM_TARGET_FILE%"
+    echo [INFO] Restricting GAM to scan ONLY specific user drives provided in the CSV.
+) else (
+    set GAM_USER_TARGET=all users
+    echo [INFO] Note: Because GAM must search every user's Drive to find these sites,
+    echo [INFO] it will first fetch the list of all users. This may take a few minutes
+    echo [INFO] before you see any progress on the screen. Please be patient!
+)
+
 echo [1/6] Minimal Google Sites sanity export...
 if defined GAM_SITES_FILTER (
-    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,mimetype
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 30 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess %GAM_USER_TARGET% print filelist query "%SITES_QUERY%" fields id,name,mimetype
 ) else (
-    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess redirect stderr - multiprocess all users print filelist fields id,name,mimetype filepath showmimetype gsite
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 30 redirect csv "%OUTDIR%\GSites_Inventory_Min.csv" multiprocess redirect stderr - multiprocess %GAM_USER_TARGET% print filelist fields id,name,mimetype filepath showmimetype gsite
 )
 if errorlevel 1 goto :fail
 
 echo [2/6] Detailed Google Sites inventory...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Inventory_Detailed.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid,size,quotabytesused,version,viewedbymetime,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled,starred,modifiedbyme,modifiedbymetime,viewedbyme,explicitlytrashed,spaces,thumbnaillink,thumbnailversion,hasthumbnail,exportlinks
+"%GAM_PATH%" config auto_batch_min 1 num_threads 30 redirect csv "%OUTDIR%\GSites_Inventory_Detailed.csv" multiprocess %GAM_USER_TARGET% print filelist query "%SITES_QUERY%" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid,size,quotabytesused,version,viewedbymetime,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled,starred,modifiedbyme,modifiedbymetime,viewedbyme,explicitlytrashed,spaces,thumbnaillink,thumbnailversion,hasthumbnail,exportlinks
 if errorlevel 1 goto :fail
 
 echo [3/6] Google Sites permissions and security...
-"%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\GSites_Permissions.csv" multiprocess all users print filelist query "%SITES_QUERY%" fields id,name,webviewlink,owners,basicpermissions,shared,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled oneitemperrow
+"%GAM_PATH%" config auto_batch_min 1 num_threads 30 redirect csv "%OUTDIR%\GSites_Permissions.csv" multiprocess %GAM_USER_TARGET% print filelist query "%SITES_QUERY%" fields id,name,webviewlink,owners,basicpermissions,shared,copyrequireswriterpermission,viewerscancopycontent,writerscanshare,inheritedpermissionsdisabled oneitemperrow
+
 if errorlevel 1 goto :fail
 
 REM Skip full-tenant candidate exports when doing a targeted site run
@@ -81,15 +92,15 @@ if defined GAM_SITES_FILTER (
     echo [6/6] Skipping broad candidate Apps Script inventory - targeted run.
 ) else (
     echo [4/6] Broad candidate Google Sheets inventory...
-    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Sheets.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Sheets.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
 
     echo [5/6] Broad candidate Google Forms inventory...
-    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Forms.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.form' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Forms.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.form' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
 
     echo [6/6] Broad candidate Apps Script inventory...
-    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Scripts.csv" multiprocess all users print filelist query "mimeType='application/vnd.google-apps.script' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
+    "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Scripts.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.script' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
 )
 

@@ -147,6 +147,22 @@ https://sites.google.com/yourcompany.com/another-site
 .\Run-FullAssessment.ps1 -PrimaryDomain "yourcompany.com" -SkipGAMExport -SkipBrowserAuth -SelectedSitesCsv "selected_sites.csv" -InventoryCsv "C:\path\to\GSites_Inventory_Detailed.csv"
 ```
 
+**Run for a specific list of target users (find all sites owned by these users):**
+
+If you don't know the exact site names but want to find all Google Sites owned by a specific set of users, provide a CSV with their email addresses. This completely skips the full tenant scan.
+
+Example CSV (`target_users.csv`):
+```csv
+Email
+user1@yourcompany.com
+user2@yourcompany.com
+```
+
+```powershell
+# Run the assessment only for these specific users
+.\Run-FullAssessment.ps1 -PrimaryDomain "yourcompany.com" -TargetUsersCsv "target_users.csv"
+```
+
 ---
 
 ## Customer Changes Summary
