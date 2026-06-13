@@ -85,24 +85,17 @@ echo [3/6] Google Sites permissions and security...
 
 if errorlevel 1 goto :fail
 
-REM Skip full-tenant candidate exports when doing a targeted site run
-if defined GAM_SITES_FILTER (
-    echo [4/6] Skipping broad candidate Google Sheets inventory - targeted run.
-    echo [5/6] Skipping broad candidate Google Forms inventory - targeted run.
-    echo [6/6] Skipping broad candidate Apps Script inventory - targeted run.
-) else (
-    echo [4/6] Broad candidate Google Sheets inventory...
+    echo [4/6] Candidate Google Sheets inventory...
     "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Sheets.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
 
-    echo [5/6] Broad candidate Google Forms inventory...
+    echo [5/6] Candidate Google Forms inventory...
     "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Forms.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.form' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
 
-    echo [6/6] Broad candidate Apps Script inventory...
+    echo [6/6] Candidate Apps Script inventory...
     "%GAM_PATH%" config auto_batch_min 1 num_threads 10 redirect csv "%OUTDIR%\Candidate_Scripts.csv" multiprocess %GAM_USER_TARGET% print filelist query "mimeType='application/vnd.google-apps.script' and trashed=false" fields id,name,mimetype,webviewlink,createdtime,modifiedtime,owners,shared,parents,driveid
     if errorlevel 1 goto :fail
-)
 
 echo.
 echo GAM exports completed successfully.
