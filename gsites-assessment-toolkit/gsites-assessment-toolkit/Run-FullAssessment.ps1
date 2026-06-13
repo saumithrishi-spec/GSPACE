@@ -218,7 +218,7 @@ function Filter-InventoryBySelectedSites {
     Write-Info "Filtering inventory to $($selectedNames.Count) selected site name(s)..."
 
     $inventory = @(Import-Csv $InventoryPath)
-    $filtered = $inventory | Where-Object {
+    $filtered = @($inventory | Where-Object {
         $name = Get-SafeProperty -InputObject $_ -PropertyNames @('name', 'SiteName', 'Name', 'SITENAME')
 
         $urlName = $null
@@ -228,7 +228,7 @@ function Filter-InventoryBySelectedSites {
         }
 
         $selectedNames.Contains([string]$name) -or $selectedNames.Contains([string]$urlName)
-    }
+    })
 
     if ($filtered.Count -eq 0) {
         throw "None of the selected site names were found in the inventory. Check the names in $SelectedSitesCsvPath. If you provided URLs, make sure the site name in the URL matches the Drive file name."
@@ -248,10 +248,10 @@ function Filter-InventoryBySelectedSites {
     $publishedUrlsPath = Join-Path (Split-Path $InventoryPath) 'Sites_Published_URLs.csv'
     if (Test-Path $publishedUrlsPath) {
         $published = @(Import-Csv $publishedUrlsPath)
-        $filteredPublished = $published | Where-Object {
+        $filteredPublished = @($published | Where-Object {
             $name = Get-SafeProperty -InputObject $_ -PropertyNames @('SiteName', 'name')
             $selectedNames.Contains([string]$name)
-        }
+        })
         $filteredPublished | Export-Csv -NoTypeInformation -Path $publishedUrlsPath
         Write-Success "Filtered published URLs to $($filteredPublished.Count) site(s)"
     }
@@ -260,10 +260,10 @@ function Filter-InventoryBySelectedSites {
     $permissionsPath = Join-Path (Split-Path $InventoryPath) 'GSites_Permissions.csv'
     if (Test-Path $permissionsPath) {
         $perms = @(Import-Csv $permissionsPath)
-        $filteredPerms = $perms | Where-Object {
+        $filteredPerms = @($perms | Where-Object {
             $name = Get-SafeProperty -InputObject $_ -PropertyNames @('name', 'SiteName')
             $selectedNames.Contains([string]$name)
-        }
+        })
         $filteredPerms | Export-Csv -NoTypeInformation -Path $permissionsPath
         Write-Success "Filtered permissions to $($filteredPerms.Count) row(s)"
     }
@@ -670,7 +670,7 @@ if (-not $SkipCrawl) {
         throw "Inventory file not found: $inventoryFile. Run GAM export first."
     }
 
-    $siteCount = (Import-Csv $inventoryFile).Count
+    $siteCount = @(Import-Csv $inventoryFile).Count
     Write-Info "Found $siteCount sites"
 
     if ($siteCount -eq 0) {
@@ -786,7 +786,7 @@ if (-not $SkipCrawl) {
     Write-Step "STEP 4B: Site Crawling with Playwright"
 
     $inventoryFile = Join-Path $OutputDir 'GSites_Inventory_Detailed.csv'
-    $siteCount = (Import-Csv $inventoryFile).Count
+    $siteCount = @(Import-Csv $inventoryFile).Count
     Write-Info "Total sites in inventory : $siteCount"
     Write-Info "Max pages per site       : $MaxPagesPerSite"
     if ($SiteOffset -gt 0) { Write-Info "Site offset (skip first) : $SiteOffset" }
@@ -993,7 +993,7 @@ Write-Success "Complexity scoring completed"
 
 $reportFile = Join-Path $OutputDir 'Complexity_Report.csv'
 if (Test-Path $reportFile) {
-    $report = Import-Csv $reportFile
+    $report = @(Import-Csv $reportFile)
     Write-Info "   Complexity_Report.csv ($($report.Count) sites)"
 
     # Summary statistics
