@@ -24,10 +24,14 @@
 .PARAMETER OutputDir
   Folder for output CSVs. Defaults to the same folder as this script.
 
+.PARAMETER ConfigFile
+  Path to a .psd1 config file. Defaults to TaskScan.config.psd1 in the same
+  folder as this script. Edit that file once to set GamPath, OutputDir, etc.
+  and then run the script with no extra arguments.
+
 .PARAMETER GamPath
-  Path to gam executable. If omitted the script auto-detects GAM by checking
-  PATH and all common install locations (C:\GAM7, C:\GAM, LOCALAPPDATA, etc.).
-  Only supply this if auto-detection fails.
+  Path to gam executable. Overrides the config file value. If neither is set
+  the script auto-detects GAM from PATH and common install locations.
 
 .PARAMETER IncludeCompleted
   Include completed tasks in the output.
@@ -61,9 +65,10 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$UsersFile = (Join-Path $PSScriptRoot 'TargetUsers.txt'),
+    [string]$ConfigFile = (Join-Path $PSScriptRoot 'TaskScan.config.psd1'),
+    [string]$UsersFile,
     [string[]]$Users,
-    [string]$OutputDir = $PSScriptRoot,
+    [string]$OutputDir,
     [string]$GamPath = '',
     [switch]$IncludeCompleted,
     [switch]$IncludeHidden,
@@ -75,6 +80,27 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $mainScript = Join-Path $PSScriptRoot 'Get-GoogleTasksWithCreator.ps1'
+
+# ── Load config file (values fill in anything not set on the command line) ───
+$cfg = @{}
+if (Test-Path $ConfigFile) {
+    $cfg = Import-PowerShellDataFile -LiteralPath $ConfigFile
+    Write-Host ("Config loaded: {0}" -f $ConfigFile) -ForegroundColor DarkGray
+}
+else {
+    Write-Warning "Config file not found at '$ConfigFile'. Using defaults / auto-detection."
+}
+
+# Apply config values for settings that were NOT explicitly passed
+# (switches default to $false so we check the config to honour $true there)
+if (-not $GamPath)       { $GamPath  = if ($cfg.GamPath)  { $cfg.GamPath  } else { '' } }
+if (-not $UsersFile)     { $UsersFile = if ($cfg.UsersFile -and $cfg.UsersFile -ne '') { $cfg.UsersFile } else { Join-Path $PSScriptRoot 'TargetUsers.txt' } }
+if (-not $OutputDir)     { $OutputDir = if ($cfg.OutputDir -and $cfg.OutputDir -ne '') { $cfg.OutputDir } else { $PSScriptRoot } }
+if (-not $IncludeCompleted.IsPresent -and $cfg.IncludeCompleted) { $IncludeCompleted = [switch]$true }
+if (-not $IncludeHidden.IsPresent    -and $cfg.IncludeHidden)    { $IncludeHidden    = [switch]$true }
+if (-not $IncludeDeleted.IsPresent   -and $cfg.IncludeDeleted)   { $IncludeDeleted   = [switch]$true }
+if (-not $ScanSpaces.IsPresent       -and $cfg.ScanSpaces)       { $ScanSpaces       = [switch]$true }
+if (-not $SkipDocCommentScan.IsPresent -and $cfg.SkipDocCommentScan) { $SkipDocCommentScan = [switch]$true }
 
 # ── Auto-detect GAM executable ───────────────────────────────────────────────
 function Find-Gam {
