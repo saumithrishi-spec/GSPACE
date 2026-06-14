@@ -1,0 +1,148 @@
+<#
+.SYNOPSIS
+  Targeted Google Tasks scan — runs Get-GoogleTasksWithCreator.ps1 for a
+  specific list of users instead of the whole tenant.
+
+.DESCRIPTION
+  Reads a plain-text user list (one primaryEmail per line) or accepts an
+  inline comma-separated list, then delegates to Get-GoogleTasksWithCreator.ps1
+  with settings tuned for small, targeted runs:
+
+    - Tenant-wide Chat space scan is SKIPPED by default (use -ScanSpaces to
+      enable it; it is expensive and only useful for full-tenant audits).
+    - Doc-comment scan is ON by default for targeted runs (few users = fast).
+    - Output is stamped with date/time so repeated runs do not overwrite.
+    - A pre-flight summary is printed before any GAM calls are made.
+
+.PARAMETER UsersFile
+  Path to a plain-text file with one email per line (lines starting with '#'
+  are ignored). Defaults to .\TargetUsers.txt in the same folder as this script.
+
+.PARAMETER Users
+  Inline comma-separated list of primaryEmail addresses. Overrides -UsersFile.
+
+.PARAMETER OutputDir
+  Folder for output CSVs. Defaults to the same folder as this script.
+
+.PARAMETER GamPath
+  Path to gam executable. Default: 'gam' (must be on PATH).
+
+.PARAMETER IncludeCompleted
+  Include completed tasks in the output.
+
+.PARAMETER IncludeHidden
+  Include hidden tasks.
+
+.PARAMETER IncludeDeleted
+  Include deleted tasks.
+
+.PARAMETER ScanSpaces
+  Enable the tenant-wide Chat space scan (disabled by default for targeted runs).
+
+.PARAMETER SkipDocCommentScan
+  Skip the Drive comment scan (enabled by default for targeted runs).
+
+.PARAMETER CheckpointCsv
+  Optional path for an incremental checkpoint CSV updated after each user.
+
+.EXAMPLE
+  # Scan the users listed in TargetUsers.txt (default)
+  .\Invoke-TargetedTaskScan.ps1
+
+.EXAMPLE
+  # Scan two specific users inline
+  .\Invoke-TargetedTaskScan.ps1 -Users alice@corp.com,bob@corp.com
+
+.EXAMPLE
+  # Use a custom users file and include completed tasks
+  .\Invoke-TargetedTaskScan.ps1 -UsersFile C:\lists\hr_team.txt -IncludeCompleted
+#>
+[CmdletBinding()]
+param(
+    [string]$UsersFile = (Join-Path $PSScriptRoot 'TargetUsers.txt'),
+    [string[]]$Users,
+    [string]$OutputDir = $PSScriptRoot,
+    [string]$GamPath = 'gam',
+    [switch]$IncludeCompleted,
+    [switch]$IncludeHidden,
+    [switch]$IncludeDeleted,
+    [switch]$ScanSpaces,
+    [switch]$SkipDocCommentScan,
+    [string]$CheckpointCsv
+)
+
+$ErrorActionPreference = 'Stop'
+$mainScript = Join-Path $PSScriptRoot 'Get-GoogleTasksWithCreator.ps1'
+if (-not (Test-Path $mainScript)) {
+    throw "Cannot find Get-GoogleTasksWithCreator.ps1 alongside this script at: $mainScript"
+}
+
+# ── Resolve the user list ────────────────────────────────────────────────────
+$resolvedUsers = @()
+
+if ($Users -and $Users.Count -gt 0) {
+    # Inline list wins over file
+    $resolvedUsers = $Users | Where-Object { $_ -match '@' } | ForEach-Object { $_.Trim() }
+}
+elseif (Test-Path $UsersFile) {
+    $resolvedUsers = Get-Content -LiteralPath $UsersFile |
+        Where-Object { $_ -and $_.Trim() -ne '' -and $_.Trim() -notmatch '^#' } |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -match '@' }
+}
+else {
+    throw "No users provided and UsersFile not found: $UsersFile`nCreate TargetUsers.txt or pass -Users alice@corp.com,bob@corp.com"
+}
+
+if ($resolvedUsers.Count -eq 0) {
+    throw "User list is empty. Add at least one primaryEmail to $UsersFile or use -Users."
+}
+
+# ── Pre-flight summary ───────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "=== Targeted Google Tasks Scan ===" -ForegroundColor Cyan
+Write-Host ("  Users to scan : {0}" -f $resolvedUsers.Count) -ForegroundColor White
+Write-Host ("  Doc scan      : {0}" -f $(if ($SkipDocCommentScan) { 'SKIPPED' } else { 'ON (default for targeted)' })) -ForegroundColor White
+Write-Host ("  Space scan    : {0}" -f $(if ($ScanSpaces) { 'ON (tenant-wide — may be slow)' } else { 'SKIPPED (use -ScanSpaces to enable)' })) -ForegroundColor White
+Write-Host ""
+Write-Host "  Users:" -ForegroundColor DarkGray
+$resolvedUsers | ForEach-Object { Write-Host ("    - {0}" -f $_) -ForegroundColor DarkGray }
+Write-Host ""
+
+# ── Build output paths ───────────────────────────────────────────────────────
+$stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null }
+$outputCsv  = Join-Path $OutputDir "Tasks_Targeted_$stamp.csv"
+$summaryCsv = Join-Path $OutputDir "Tasks_Targeted_${stamp}_Summary.csv"
+
+# ── Write a temp users file for the main script ──────────────────────────────
+$tmpUsers = [IO.Path]::GetTempFileName()
+($resolvedUsers -join "`r`n") | Out-File -FilePath $tmpUsers -Encoding ASCII
+
+# ── Build argument list ──────────────────────────────────────────────────────
+$scriptArgs = @(
+    '-Users', 'targeted_placeholder'   # required param — overridden by -UsersFile below
+    '-UsersFile', $tmpUsers
+    '-OutputCsv', $outputCsv
+    '-SummaryCsv', $summaryCsv
+    '-GamPath', $GamPath
+)
+if ($IncludeCompleted)    { $scriptArgs += '-IncludeCompleted' }
+if ($IncludeHidden)       { $scriptArgs += '-IncludeHidden' }
+if ($IncludeDeleted)      { $scriptArgs += '-IncludeDeleted' }
+if (-not $ScanSpaces)     { $scriptArgs += '-SkipTenantSpaceScan' }
+if ($SkipDocCommentScan)  { $scriptArgs += '-SkipDocCommentScan' }
+if ($CheckpointCsv)       { $scriptArgs += '-CheckpointCsv'; $scriptArgs += $CheckpointCsv }
+
+# ── Run ──────────────────────────────────────────────────────────────────────
+try {
+    & $mainScript @scriptArgs
+}
+finally {
+    Remove-Item $tmpUsers -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host ""
+Write-Host "=== Done ===" -ForegroundColor Green
+Write-Host ("  Detail CSV  : {0}" -f $outputCsv)   -ForegroundColor Green
+Write-Host ("  Summary CSV : {0}" -f $summaryCsv)  -ForegroundColor Green
