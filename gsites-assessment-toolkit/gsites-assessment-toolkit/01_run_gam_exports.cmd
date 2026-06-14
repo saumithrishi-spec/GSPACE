@@ -59,7 +59,7 @@ if defined GAM_SITES_FILTER (
 )
 
 if defined GAM_TARGET_FILE (
-    set GAM_USER_TARGET=file "%GAM_TARGET_FILE%"
+    set GAM_USER_TARGET=csv "%GAM_TARGET_FILE%" gam user "~Email"
     echo [INFO] Restricting GAM to scan ONLY specific user drives provided in the CSV.
 ) else (
     set GAM_USER_TARGET=all users

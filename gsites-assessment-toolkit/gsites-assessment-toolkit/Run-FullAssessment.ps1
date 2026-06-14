@@ -353,8 +353,9 @@ function Build-GamTargetUsersFile {
 
     Write-Info "Found $($emails.Count) specific user email(s) in selected sites CSV. Restricting GAM scan to these users."
 
-    $targetFile = Join-Path $OutputDir 'gam_target_users.txt'
-    $emails | Set-Content -Path $targetFile
+    $targetFile = Join-Path $OutputDir 'gam_target_users.csv'
+    $csvData = $emails | ForEach-Object { [PSCustomObject]@{ Email = $_ } }
+    $csvData | Export-Csv -Path $targetFile -NoTypeInformation
     return $targetFile
 }
 
