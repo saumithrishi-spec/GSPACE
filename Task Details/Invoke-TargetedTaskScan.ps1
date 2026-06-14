@@ -115,32 +115,25 @@ if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir
 $outputCsv  = Join-Path $OutputDir "Tasks_Targeted_$stamp.csv"
 $summaryCsv = Join-Path $OutputDir "Tasks_Targeted_${stamp}_Summary.csv"
 
-# ── Write a temp users file for the main script ──────────────────────────────
-$tmpUsers = [IO.Path]::GetTempFileName()
-($resolvedUsers -join "`r`n") | Out-File -FilePath $tmpUsers -Encoding ASCII
+# ── Build argument hashtable (hashtable splatting avoids [string[]] greediness
+#    in Windows PowerShell 5 that corrupts positional array splatting) ────────
+$scriptArgs = @{
+    Users      = $resolvedUsers          # pass the already-resolved array directly
+    OutputCsv  = $outputCsv
+    SummaryCsv = $summaryCsv
+    GamPath    = $GamPath
+}
 
-# ── Build argument list ──────────────────────────────────────────────────────
-$scriptArgs = @(
-    '-Users', 'targeted_placeholder'   # required param — overridden by -UsersFile below
-    '-UsersFile', $tmpUsers
-    '-OutputCsv', $outputCsv
-    '-SummaryCsv', $summaryCsv
-    '-GamPath', $GamPath
-)
-if ($IncludeCompleted)    { $scriptArgs += '-IncludeCompleted' }
-if ($IncludeHidden)       { $scriptArgs += '-IncludeHidden' }
-if ($IncludeDeleted)      { $scriptArgs += '-IncludeDeleted' }
-if (-not $ScanSpaces)     { $scriptArgs += '-SkipTenantSpaceScan' }
-if ($SkipDocCommentScan)  { $scriptArgs += '-SkipDocCommentScan' }
-if ($CheckpointCsv)       { $scriptArgs += '-CheckpointCsv'; $scriptArgs += $CheckpointCsv }
+# Switch parameters must be passed as [switch] values in hashtable splatting
+if (-not $ScanSpaces)    { $scriptArgs['SkipTenantSpaceScan'] = $true }
+if ($SkipDocCommentScan) { $scriptArgs['SkipDocCommentScan']  = $true }
+if ($IncludeCompleted)   { $scriptArgs['IncludeCompleted']    = $true }
+if ($IncludeHidden)      { $scriptArgs['IncludeHidden']       = $true }
+if ($IncludeDeleted)     { $scriptArgs['IncludeDeleted']      = $true }
+if ($CheckpointCsv)      { $scriptArgs['CheckpointCsv']       = $CheckpointCsv }
 
 # ── Run ──────────────────────────────────────────────────────────────────────
-try {
-    & $mainScript @scriptArgs
-}
-finally {
-    Remove-Item $tmpUsers -Force -ErrorAction SilentlyContinue
-}
+& $mainScript @scriptArgs
 
 Write-Host ""
 Write-Host "=== Done ===" -ForegroundColor Green
